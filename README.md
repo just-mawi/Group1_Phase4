@@ -51,3 +51,5 @@ According to our evaluation, **Collaborative Filtering (SVD)** emerged as the su
 * cd to the repo folder
 * pip install -r requirements.txt
 * streamlit run app.py
+
+Here is the live [link](https://bxjl9dnv7rze79ax2nmdbr.streamlit.app/)
