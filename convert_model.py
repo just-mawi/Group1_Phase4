@@ -1,14 +1,9 @@
-"""
-Run this script once locally (where scikit-surprise is installed) to convert
-recommender_model.pkl into a version that has no scikit-surprise dependency.
-"""
 import sys
 import pickle
 import numpy as np
 import scipy.sparse
 
-# Shim: pickle may reference scipy.sparse._csr (newer scipy) while local
-# env has scipy.sparse.csr (older scipy). Register the alias so unpickling works.
+
 if 'scipy.sparse._csr' not in sys.modules:
     import scipy.sparse.csr as _csr_mod
     sys.modules['scipy.sparse._csr'] = _csr_mod
