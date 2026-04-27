@@ -49,7 +49,7 @@ According to our evaluation, **Collaborative Filtering (SVD)** emerged as the su
 ```
 
 ## Installation
-git clone this repo
-cd to the repo folder
-pip install -r requirements.txt
-streamlit run app.py
+* git clone this repo
+* cd to the repo folder
+* pip install -r requirements.txt
+* streamlit run app.py
