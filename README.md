@@ -39,6 +39,7 @@ According to our evaluation, **Collaborative Filtering (SVD)** emerged as the su
 ├── data/                   # Raw MovieLens CSVs & Exported Tableau datasets
 ├── movies.ipynb              # Complete CRISP-DM analysis & Modeling
 ├── app.py                  # Streamlit frontend
+├── convert_model.py
 ├── recommender_model.pkl   # Serialized SVD model & TF-IDF matrix
 ├── slides.pdf                # Non-technical presentation
 ├── requirements.txt
