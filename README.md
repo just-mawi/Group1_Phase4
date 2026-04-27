@@ -32,11 +32,7 @@ According to our evaluation, **Collaborative Filtering (SVD)** emerged as the su
 | **Hybrid** | **0.85+** | Early users needing a mix |
 | **Content-Based** | **0.78** | Discovery of niche/new items |
 
-![Genre Distribution](data/div.png)
-*Figure 1: Distribution of movies across the catalog, dominated by Drama and Comedy.*
 
-![Prediction Error](data/prederr.png)
-*Figure 2: Distribution of absolute error between SVD and KNN models.*
 
 ## Project Structure
 ```text
