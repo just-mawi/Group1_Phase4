@@ -1,0 +1,31 @@
+userId,title,predicted_rating,genre
+1,"Shawshank Redemption, The (1994)",5.0,Crime
+1,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964),5.0,Comedy
+1,Casablanca (1942),5.0,Drama
+1,Paths of Glory (1957),5.0,Drama
+1,"Princess Bride, The (1987)",5.0,Action
+5,Lawrence of Arabia (1962),4.55,Adventure
+5,"Shawshank Redemption, The (1994)",4.39,Crime
+5,Rosemary's Baby (1968),4.38,Drama
+5,Paths of Glory (1957),4.37,Drama
+5,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964),4.37,Comedy
+50,Lawrence of Arabia (1962),3.7,Adventure
+50,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964),3.66,Comedy
+50,"Godfather, The (1972)",3.58,Crime
+50,There Will Be Blood (2007),3.55,Drama
+50,"Philadelphia Story, The (1940)",3.52,Comedy
+100,Lawrence of Arabia (1962),4.74,Adventure
+100,"Shawshank Redemption, The (1994)",4.67,Crime
+100,Casablanca (1942),4.65,Drama
+100,Paths of Glory (1957),4.63,Drama
+100,Rosemary's Baby (1968),4.6,Drama
+200,Lawrence of Arabia (1962),4.53,Adventure
+200,There Will Be Blood (2007),4.52,Drama
+200,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964),4.5,Comedy
+200,The Artist (2011),4.48,Comedy
+200,Rear Window (1954),4.45,Mystery
+300,Lawrence of Arabia (1962),4.58,Adventure
+300,Fight Club (1999),4.56,Action
+300,"Bridge on the River Kwai, The (1957)",4.53,Adventure
+300,Apocalypse Now (1979),4.52,Action
+300,"Philadelphia Story, The (1940)",4.52,Comedy
