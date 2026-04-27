@@ -1,0 +1,31 @@
+userId,title,predicted_rating,genre
+1,"Shawshank Redemption, The (1994)",5.0,Crime
+1,In the Name of the Father (1993),5.0,Drama
+1,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964),5.0,Comedy
+1,Rear Window (1954),5.0,Mystery
+1,Casablanca (1942),5.0,Drama
+5,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964),4.41,Comedy
+5,Lawrence of Arabia (1962),4.4,Adventure
+5,"Bridge on the River Kwai, The (1957)",4.39,Adventure
+5,Fight Club (1999),4.39,Action
+5,Evil Dead II (Dead by Dawn) (1987),4.36,Action
+50,Lawrence of Arabia (1962),3.62,Adventure
+50,High Noon (1952),3.56,Drama
+50,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964),3.55,Comedy
+50,"Shawshank Redemption, The (1994)",3.52,Crime
+50,"Philadelphia Story, The (1940)",3.49,Comedy
+100,Lawrence of Arabia (1962),4.66,Adventure
+100,There Will Be Blood (2007),4.62,Drama
+100,"Shawshank Redemption, The (1994)",4.61,Crime
+100,"Philadelphia Story, The (1940)",4.58,Comedy
+100,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964),4.57,Comedy
+200,Lawrence of Arabia (1962),4.63,Adventure
+200,There Will Be Blood (2007),4.51,Drama
+200,"Shawshank Redemption, The (1994)",4.51,Crime
+200,"Seventh Seal, The (Sjunde inseglet, Det) (1957)",4.51,Drama
+200,Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964),4.48,Comedy
+300,There Will Be Blood (2007),4.61,Drama
+300,"Shawshank Redemption, The (1994)",4.55,Crime
+300,"Three Billboards Outside Ebbing, Missouri (2017)",4.54,Crime
+300,Citizen Kane (1941),4.53,Drama
+300,Ghost in the Shell (Kôkaku kidôtai) (1995),4.52,Animation
