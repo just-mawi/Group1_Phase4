@@ -40,7 +40,7 @@ According to our evaluation, **Collaborative Filtering (SVD)** emerged as the su
 ├── movies.ipynb              # Complete CRISP-DM analysis & Modeling
 ├── app.py                  # Streamlit frontend
 ├── recommender_model.pkl   # Serialized SVD model & TF-IDF matrix
-├── slides.pdf        
+├── slides.pdf                # Non-technical presentation
 ├── requirements.txt
 └── README.md
 ```
