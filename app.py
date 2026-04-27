@@ -5,11 +5,39 @@ import numpy as np
 import os
 from sklearn.metrics.pairwise import cosine_similarity
 
+
+class SVDPredictor:
+    def __init__(self, pu, qi, bu, bi, global_mean, user_map, item_map):
+        self.pu = pu
+        self.qi = qi
+        self.bu = bu
+        self.bi = bi
+        self.global_mean = global_mean
+        self.user_map = user_map
+        self.item_map = item_map
+
+    def predict(self, uid, iid):
+        est = self.global_mean
+        u = self.user_map.get(uid)
+        i = self.item_map.get(iid)
+        if u is not None:
+            est += self.bu[u]
+        if i is not None:
+            est += self.bi[i]
+        if u is not None and i is not None:
+            est += np.dot(self.qi[i], self.pu[u])
+        est = float(np.clip(est, 0.5, 5.0))
+        return type('Prediction', (), {'est': est})()
+
+
 @st.cache_resource
 def load_data():
     model_path = os.path.join(os.path.dirname(__file__), 'recommender_model.pkl')
     with open(model_path, 'rb') as f:
-        return pickle.load(f)
+        bundle = pickle.load(f)
+    if 'svd_arrays' in bundle:
+        bundle['svd_model'] = SVDPredictor(**bundle['svd_arrays'])
+    return bundle
 
 data_bundle = load_data()
 
@@ -45,13 +73,11 @@ def get_user_stage(user_id, df):
 # Recommender 
 class HybridRecommender:
 
-    def __init__(self, svd_model, tfidf_matrix, movie_df, train_df, trainset, data, alpha=0.7):
+    def __init__(self, svd_model, tfidf_matrix, movie_df, train_df, alpha=0.7):
         self.svd = svd_model
         self.tfidf_matrix = tfidf_matrix
         self.movie_df = movie_df
         self.train_df = train_df
-        self.trainset = trainset
-        self.data = data
         self.alpha = alpha
         self.movie_id_to_index = dict(zip(movie_df['movieId'], movie_df.index))
 
@@ -207,13 +233,10 @@ class HybridRecommender:
 
     # SVD 
     def recommend_svd(self, user_id, n=10, candidate_ids=None):
-        all_ids = set(self.data.df['movieId'].unique())
+        all_ids = set(self.movie_df['movieId'].unique())
         if candidate_ids is not None:
             all_ids = all_ids & candidate_ids
-        try:
-            rated = set(self.trainset.ur[self.trainset.to_inner_uid(user_id)])
-        except ValueError:
-            rated = set()
+        rated = set(self.train_df[self.train_df['userId'] == user_id]['movieId'])
         preds = [(m, self.svd.predict(user_id, m).est) for m in all_ids if m not in rated]
         top_ids = [m for m, _ in sorted(preds, key=lambda x: x[1], reverse=True)[:n]]
         results = []
@@ -249,8 +272,6 @@ def make_recommender():
         data_bundle['tfidf_matrix'],
         data_bundle['movie_df'],
         data_bundle['train_df'],
-        data_bundle['trainset'],
-        data_bundle['raw_data'],
     )
 
 
