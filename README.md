@@ -3,7 +3,7 @@
 
 ![Streaming Header](data/streaming.jpg)
 
-## 📌 Project Overview
+## Project Overview
 This project was developed for a burgeoning video streaming platform aiming to compete with industry giants like Netflix and Disney+. The primary goal is to **increase user retention** and **reduce churn** by providing a highly personalized viewing experience.
 
 Using the **MovieLens** dataset (100k+ ratings), we built a multi-stage recommendation engine capable of handling users at every stage of their lifecycle—from brand-new signups to long-term "resident" viewers.
