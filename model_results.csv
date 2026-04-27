@@ -1,0 +1,5 @@
+Model,RMSE,NDCG@10,Description,Best_For
+SVD,0.8607445868871944,0.9526621585009447,Users like you liked...,Active users
+KNN (User),0.8975239123353179,0.948167754590051,Your neighbors watched...,Communities
+Content-Based,,0.5272369323039748,Similar genres/tags...,New movies
+Hybrid,,0.5519285306425947,Blend of all methods,New users
