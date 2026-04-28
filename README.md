@@ -56,3 +56,7 @@ The superior performance of collaborative filtering adds up given the structure 
 * streamlit run app.py
 
 Here is the live [link](https://bxjl9dnv7rze79ax2nmdbr.streamlit.app/)
+```
+
+## Tableau
+https://d.docs.live.net/204a22a8a289afcf/Documents/Tableau link
