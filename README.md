@@ -59,8 +59,6 @@ The superior performance of collaborative filtering adds up given the structure 
 * pip install -r requirements.txt
 * streamlit run app.py
 
-Here is the live 
-```
 
 ## Tableau
 https://d.docs.live.net/204a22a8a289afcf/Documents/Tableau link
