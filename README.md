@@ -44,7 +44,7 @@ The superior performance of collaborative filtering adds up given the structure 
 ├── app.py                  # Streamlit frontend
 ├── convert_model.py           # Facilitate cloud deployment
 ├── recommender_model.pkl   # Serialized SVD model & TF-IDF matrix
-├── slides.pdf                # Non-technical presentation
+├── Group1_Phase4_Presentation.pdf                # Non-technical presentation
 ├── requirements.txt
 └── README.md
 ```
@@ -56,4 +56,3 @@ The superior performance of collaborative filtering adds up given the structure 
 * streamlit run app.py
 
 Here is the live [link](https://bxjl9dnv7rze79ax2nmdbr.streamlit.app/)
-```
