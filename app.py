@@ -42,7 +42,7 @@ def load_data():
 data_bundle = load_data()
 
 
-# Filter options 
+# Filter options
 
 @st.cache_data
 def get_filter_options():
@@ -56,7 +56,7 @@ def get_filter_options():
     return genres, int(years.min()), int(years.max())
 
 
-# Stage classification 
+# Stage classification
 
 def get_user_stage(user_id, df):
     n = df[df['userId'] == user_id].shape[0]
@@ -70,7 +70,8 @@ def get_user_stage(user_id, df):
         return "resident"
 
 
-# Recommender 
+# Recommender
+
 class HybridRecommender:
 
     def __init__(self, svd_model, tfidf_matrix, movie_df, train_df, alpha=0.7):
@@ -82,45 +83,26 @@ class HybridRecommender:
         self.movie_id_to_index = dict(zip(movie_df['movieId'], movie_df.index))
         self.movie_id_to_title = dict(zip(movie_df['movieId'], movie_df['title']))
 
-    # pre-filter
-
     def filter_candidates(self, genres=None, year_range=None):
-        """Return a set of movieIds matching the optional genre/year filters."""
         mask = pd.Series(True, index=self.movie_df.index)
-
         if genres:
             genre_mask = self.movie_df['genres'].apply(
                 lambda g: any(genre in g.split() for genre in genres)
                 if isinstance(g, str) else False
             )
             mask = mask & genre_mask
-
         if year_range:
             year_series = self.movie_df['title'].str.extract(r'\((\d{4})\)')[0].astype(float)
             mask = mask & year_series.between(year_range[0], year_range[1])
-
         return set(self.movie_df[mask]['movieId'])
 
-    # pre-filter
+    def _source_title(self, rec_idx, rated_indices, rated_titles):
+        sims = cosine_similarity(
+            self.tfidf_matrix[rec_idx], self.tfidf_matrix[rated_indices]
+        ).flatten()
+        return rated_titles[int(np.argmax(sims))]
 
-    def filter_candidates(self, genres=None, year_range=None):
-        """Return a set of movieIds matching the optional genre/year filters."""
-        mask = pd.Series(True, index=self.movie_df.index)
-
-        if genres:
-            genre_mask = self.movie_df['genres'].apply(
-                lambda g: any(genre in g.split() for genre in genres)
-                if isinstance(g, str) else False
-            )
-            mask = mask & genre_mask
-
-        if year_range:
-            year_series = self.movie_df['title'].str.extract(r'\((\d{4})\)')[0].astype(float)
-            mask = mask & year_series.between(year_range[0], year_range[1])
-
-        return set(self.movie_df[mask]['movieId'])
-
-    # popular 
+    # popular
 
     def recommend_popular(self, n=5, candidate_ids=None):
         popular = (
@@ -138,14 +120,14 @@ class HybridRecommender:
             for _, r in rows.iterrows()
         ]
 
-    # onboarding 
+    # onboarding
 
     def get_onboarding_movies(self, n=10):
         top_ids = self.train_df.groupby('movieId').size().nlargest(n).index
         return self.movie_df[self.movie_df['movieId'].isin(top_ids)][['movieId', 'title']].reset_index(drop=True)
 
     def recommend_content_from_ratings(self, ratings_dict, n=5, candidate_ids=None):
-        movie_indices, ratings = [], []
+        movie_indices, ratings, rated_titles = [], [], []
         for movie_id, rating in ratings_dict.items():
             if movie_id in self.movie_id_to_index:
                 movie_indices.append(self.movie_id_to_index[movie_id])
@@ -173,7 +155,7 @@ class HybridRecommender:
             for idx in top_idx
         ]
 
-    # content 
+    # content
 
     def _build_user_profile(self, user_id):
         user_data = self.train_df[self.train_df['userId'] == user_id]
@@ -188,8 +170,14 @@ class HybridRecommender:
         return profile.reshape(1, -1)
 
     def recommend_content(self, user_id, n=5, candidate_ids=None):
-        profile = self._build_user_profile(user_id)
-        if profile is None:
+        user_data = self.train_df[self.train_df['userId'] == user_id]
+        movie_indices, ratings, rated_titles = [], [], []
+        for _, row in user_data.iterrows():
+            if row['movieId'] in self.movie_id_to_index:
+                movie_indices.append(self.movie_id_to_index[row['movieId']])
+                ratings.append(row['rating'])
+                rated_titles.append(self.movie_id_to_title.get(row['movieId'], ''))
+        if not movie_indices:
             return None
         rated_titles = np.array(rated_titles)
         profile = np.average(self.tfidf_matrix[movie_indices].toarray(), axis=0, weights=ratings)
@@ -211,7 +199,7 @@ class HybridRecommender:
             for idx in top_idx
         ]
 
-    # hybrid 
+    # hybrid
 
     def _reason(self, svd_norm, content_norm, source_title=None):
         svd_c = self.alpha * svd_norm
@@ -271,15 +259,13 @@ class HybridRecommender:
                 })
         return results
 
-    # SVD 
+    # SVD
+
     def recommend_svd(self, user_id, n=10, candidate_ids=None):
-        all_ids = set(self.data.df['movieId'].unique())
+        all_ids = set(self.movie_df['movieId'].unique())
         if candidate_ids is not None:
             all_ids = all_ids & candidate_ids
-        try:
-            rated = set(self.trainset.ur[self.trainset.to_inner_uid(user_id)])
-        except ValueError:
-            rated = set()
+        rated = set(self.train_df[self.train_df['userId'] == user_id]['movieId'])
         preds = [(m, self.svd.predict(user_id, m).est) for m in all_ids if m not in rated]
         top_ids = [m for m, _ in sorted(preds, key=lambda x: x[1], reverse=True)[:n]]
         results = []
@@ -293,7 +279,7 @@ class HybridRecommender:
         return results
 
 
-# Router 
+# Router
 
 def router(user_id, n, recommender, candidate_ids=None):
     stage = get_user_stage(user_id, recommender.train_df)
@@ -318,7 +304,7 @@ def make_recommender():
     )
 
 
-# UI 
+# UI
 
 STAGE_LABELS = {
     "new":       "New user",
@@ -354,7 +340,7 @@ def filter_summary(genres, year_range, year_min, year_max):
     return ' · '.join(parts) if parts else None
 
 
-# App 
+# App
 
 st.title("Movie Recommendation System")
 st.markdown("Get personalized recommendations based on your viewing history.")
@@ -364,7 +350,7 @@ if 'stage' not in st.session_state:
 
 all_genres, year_min, year_max = get_filter_options()
 
-# Stage: input 
+# Stage: input
 if st.session_state.stage == 'input':
     user_id = st.number_input("Enter your User ID:", min_value=1, value=1, step=1)
     n_recs = st.slider("Number of recommendations:", 5, 20, 10)
@@ -399,7 +385,7 @@ if st.session_state.stage == 'input':
             st.session_state.stage = 'results'
         st.rerun()
 
-# Stage: onboarding 
+# Stage: onboarding
 elif st.session_state.stage == 'onboarding':
     st.info("👋 You're new here! Rate a few movies so we can personalize your picks.")
 
@@ -443,7 +429,7 @@ elif st.session_state.stage == 'onboarding':
             st.session_state.stage = 'results'
             st.rerun()
 
-# Stage: results 
+# Stage: results
 elif st.session_state.stage == 'results':
     stage = st.session_state.user_stage
     uid = st.session_state.user_id
