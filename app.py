@@ -101,13 +101,26 @@ class HybridRecommender:
 
         return set(self.movie_df[mask]['movieId'])
 
-    def _source_title(self, rec_idx, rated_indices, rated_titles):
-        sims = cosine_similarity(
-            self.tfidf_matrix[rec_idx], self.tfidf_matrix[rated_indices]
-        ).flatten()
-        return rated_titles[int(np.argmax(sims))]
+    # pre-filter
 
-    # popular
+    def filter_candidates(self, genres=None, year_range=None):
+        """Return a set of movieIds matching the optional genre/year filters."""
+        mask = pd.Series(True, index=self.movie_df.index)
+
+        if genres:
+            genre_mask = self.movie_df['genres'].apply(
+                lambda g: any(genre in g.split() for genre in genres)
+                if isinstance(g, str) else False
+            )
+            mask = mask & genre_mask
+
+        if year_range:
+            year_series = self.movie_df['title'].str.extract(r'\((\d{4})\)')[0].astype(float)
+            mask = mask & year_series.between(year_range[0], year_range[1])
+
+        return set(self.movie_df[mask]['movieId'])
+
+    # popular 
 
     def recommend_popular(self, n=5, candidate_ids=None):
         popular = (
@@ -132,7 +145,7 @@ class HybridRecommender:
         return self.movie_df[self.movie_df['movieId'].isin(top_ids)][['movieId', 'title']].reset_index(drop=True)
 
     def recommend_content_from_ratings(self, ratings_dict, n=5, candidate_ids=None):
-        movie_indices, ratings, rated_titles = [], [], []
+        movie_indices, ratings = [], []
         for movie_id, rating in ratings_dict.items():
             if movie_id in self.movie_id_to_index:
                 movie_indices.append(self.movie_id_to_index[movie_id])
@@ -175,14 +188,8 @@ class HybridRecommender:
         return profile.reshape(1, -1)
 
     def recommend_content(self, user_id, n=5, candidate_ids=None):
-        user_data = self.train_df[self.train_df['userId'] == user_id]
-        movie_indices, ratings, rated_titles = [], [], []
-        for _, row in user_data.iterrows():
-            if row['movieId'] in self.movie_id_to_index:
-                movie_indices.append(self.movie_id_to_index[row['movieId']])
-                ratings.append(row['rating'])
-                rated_titles.append(self.movie_id_to_title.get(row['movieId'], ''))
-        if not movie_indices:
+        profile = self._build_user_profile(user_id)
+        if profile is None:
             return None
         rated_titles = np.array(rated_titles)
         profile = np.average(self.tfidf_matrix[movie_indices].toarray(), axis=0, weights=ratings)
@@ -221,18 +228,9 @@ class HybridRecommender:
         return "Matches your history and loved by similar viewers"
 
     def recommend_hybrid(self, user_id, n=10, candidate_ids=None):
-        user_data = self.train_df[self.train_df['userId'] == user_id]
-        movie_indices, ratings, rated_titles = [], [], []
-        for _, row in user_data.iterrows():
-            if row['movieId'] in self.movie_id_to_index:
-                movie_indices.append(self.movie_id_to_index[row['movieId']])
-                ratings.append(row['rating'])
-                rated_titles.append(self.movie_id_to_title.get(row['movieId'], ''))
-        if not movie_indices:
+        profile = self._build_user_profile(user_id)
+        if profile is None:
             return self.recommend_svd(user_id, n, candidate_ids=candidate_ids)
-        rated_titles = np.array(rated_titles)
-        profile = np.average(self.tfidf_matrix[movie_indices].toarray(), axis=0, weights=ratings)
-        profile = profile.reshape(1, -1)
         scores = cosine_similarity(profile, self.tfidf_matrix).flatten()
         watched = set(user_data['movieId'])
         for m in watched:
@@ -266,10 +264,13 @@ class HybridRecommender:
 
     # SVD 
     def recommend_svd(self, user_id, n=10, candidate_ids=None):
-        all_ids = set(self.movie_df['movieId'].unique())
+        all_ids = set(self.data.df['movieId'].unique())
         if candidate_ids is not None:
             all_ids = all_ids & candidate_ids
-        rated = set(self.train_df[self.train_df['userId'] == user_id]['movieId'])
+        try:
+            rated = set(self.trainset.ur[self.trainset.to_inner_uid(user_id)])
+        except ValueError:
+            rated = set()
         preds = [(m, self.svd.predict(user_id, m).est) for m in all_ids if m not in rated]
         top_ids = [m for m, _ in sorted(preds, key=lambda x: x[1], reverse=True)[:n]]
         results = []

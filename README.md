@@ -29,10 +29,10 @@ According to our evaluation, **Collaborative Filtering (SVD)** emerged as the su
 | Model | NDCG@10 | Best For |
 | :--- | :--- | :--- |
 | **SVD** | **0.90+** | Active users with history |
-| **Hybrid** | **0.85+** | Early users needing a mix |
-| **Content-Based** | **0.78** | Discovery of niche/new items |
+| **Hybrid** | **0.58+** | Early users needing a mix |
+| **Content-Based** | **0.52** | Discovery of niche/new items |
 
-
+The superior performance of collaborative filtering adds up given the structure of the dataset. With over 100,000 ratings across hundreds of users, the interaction matrix is sufficiently dense for matrix factorization methods to learn stable latent factors. In contrast, content-based filtering is constrained by limited content richness in movie metadata (genres and sparse tags)
 
 ## Project Structure
 ```text
