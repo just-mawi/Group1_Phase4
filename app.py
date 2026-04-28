@@ -228,9 +228,18 @@ class HybridRecommender:
         return "Matches your history and loved by similar viewers"
 
     def recommend_hybrid(self, user_id, n=10, candidate_ids=None):
-        profile = self._build_user_profile(user_id)
-        if profile is None:
+        user_data = self.train_df[self.train_df['userId'] == user_id]
+        movie_indices, ratings, rated_titles = [], [], []
+        for _, row in user_data.iterrows():
+            if row['movieId'] in self.movie_id_to_index:
+                movie_indices.append(self.movie_id_to_index[row['movieId']])
+                ratings.append(row['rating'])
+                rated_titles.append(self.movie_id_to_title.get(row['movieId'], ''))
+        if not movie_indices:
             return self.recommend_svd(user_id, n, candidate_ids=candidate_ids)
+        rated_titles = np.array(rated_titles)
+        profile = np.average(self.tfidf_matrix[movie_indices].toarray(), axis=0, weights=ratings)
+        profile = profile.reshape(1, -1)
         scores = cosine_similarity(profile, self.tfidf_matrix).flatten()
         watched = set(user_data['movieId'])
         for m in watched:
