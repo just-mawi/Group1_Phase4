@@ -5,11 +5,39 @@ import numpy as np
 import os
 from sklearn.metrics.pairwise import cosine_similarity
 
+
+class SVDPredictor:
+    def __init__(self, pu, qi, bu, bi, global_mean, user_map, item_map):
+        self.pu = pu
+        self.qi = qi
+        self.bu = bu
+        self.bi = bi
+        self.global_mean = global_mean
+        self.user_map = user_map
+        self.item_map = item_map
+
+    def predict(self, uid, iid):
+        est = self.global_mean
+        u = self.user_map.get(uid)
+        i = self.item_map.get(iid)
+        if u is not None:
+            est += self.bu[u]
+        if i is not None:
+            est += self.bi[i]
+        if u is not None and i is not None:
+            est += np.dot(self.qi[i], self.pu[u])
+        est = float(np.clip(est, 0.5, 5.0))
+        return type('Prediction', (), {'est': est})()
+
+
 @st.cache_resource
 def load_data():
     model_path = os.path.join(os.path.dirname(__file__), 'recommender_model.pkl')
     with open(model_path, 'rb') as f:
-        return pickle.load(f)
+        bundle = pickle.load(f)
+    if 'svd_arrays' in bundle:
+        bundle['svd_model'] = SVDPredictor(**bundle['svd_arrays'])
+    return bundle
 
 data_bundle = load_data()
 
@@ -45,15 +73,33 @@ def get_user_stage(user_id, df):
 # Recommender 
 class HybridRecommender:
 
-    def __init__(self, svd_model, tfidf_matrix, movie_df, train_df, trainset, data, alpha=0.7):
+    def __init__(self, svd_model, tfidf_matrix, movie_df, train_df, alpha=0.7):
         self.svd = svd_model
         self.tfidf_matrix = tfidf_matrix
         self.movie_df = movie_df
         self.train_df = train_df
-        self.trainset = trainset
-        self.data = data
         self.alpha = alpha
         self.movie_id_to_index = dict(zip(movie_df['movieId'], movie_df.index))
+        self.movie_id_to_title = dict(zip(movie_df['movieId'], movie_df['title']))
+
+    # pre-filter
+
+    def filter_candidates(self, genres=None, year_range=None):
+        """Return a set of movieIds matching the optional genre/year filters."""
+        mask = pd.Series(True, index=self.movie_df.index)
+
+        if genres:
+            genre_mask = self.movie_df['genres'].apply(
+                lambda g: any(genre in g.split() for genre in genres)
+                if isinstance(g, str) else False
+            )
+            mask = mask & genre_mask
+
+        if year_range:
+            year_series = self.movie_df['title'].str.extract(r'\((\d{4})\)')[0].astype(float)
+            mask = mask & year_series.between(year_range[0], year_range[1])
+
+        return set(self.movie_df[mask]['movieId'])
 
     # pre-filter
 
@@ -104,8 +150,10 @@ class HybridRecommender:
             if movie_id in self.movie_id_to_index:
                 movie_indices.append(self.movie_id_to_index[movie_id])
                 ratings.append(rating)
+                rated_titles.append(self.movie_id_to_title.get(movie_id, ''))
         if not movie_indices:
             return None
+        rated_titles = np.array(rated_titles)
         profile = np.average(self.tfidf_matrix[movie_indices].toarray(), axis=0, weights=ratings)
         profile = profile.reshape(1, -1)
         scores = cosine_similarity(profile, self.tfidf_matrix).flatten()
@@ -117,10 +165,12 @@ class HybridRecommender:
             mask = np.array([i in allowed for i in range(len(scores))])
             scores[~mask] = -1
         top_idx = np.argsort(scores)[-n:][::-1]
-        rows = self.movie_df.iloc[top_idx]
         return [
-            {'title': r['title'], 'explanation': 'Matches what you rated highly'}
-            for _, r in rows.iterrows()
+            {
+                'title': self.movie_df.iloc[idx]['title'],
+                'explanation': f"Because you liked {self._source_title(idx, movie_indices, rated_titles)}",
+            }
+            for idx in top_idx
         ]
 
     # content 
@@ -141,8 +191,11 @@ class HybridRecommender:
         profile = self._build_user_profile(user_id)
         if profile is None:
             return None
+        rated_titles = np.array(rated_titles)
+        profile = np.average(self.tfidf_matrix[movie_indices].toarray(), axis=0, weights=ratings)
+        profile = profile.reshape(1, -1)
         scores = cosine_similarity(profile, self.tfidf_matrix).flatten()
-        for movie_id in self.train_df[self.train_df['userId'] == user_id]['movieId']:
+        for movie_id in user_data['movieId']:
             if movie_id in self.movie_id_to_index:
                 scores[self.movie_id_to_index[movie_id]] = -1
         if candidate_ids is not None:
@@ -150,15 +203,17 @@ class HybridRecommender:
             mask = np.array([i in allowed for i in range(len(scores))])
             scores[~mask] = -1
         top_idx = np.argsort(scores)[-n:][::-1]
-        rows = self.movie_df.iloc[top_idx]
         return [
-            {'title': r['title'], 'explanation': 'Matches your watch history'}
-            for _, r in rows.iterrows()
+            {
+                'title': self.movie_df.iloc[idx]['title'],
+                'explanation': f"Because you liked {self._source_title(idx, movie_indices, rated_titles)}",
+            }
+            for idx in top_idx
         ]
 
     # hybrid 
 
-    def _reason(self, svd_norm, content_norm):
+    def _reason(self, svd_norm, content_norm, source_title=None):
         svd_c = self.alpha * svd_norm
         cont_c = (1 - self.alpha) * content_norm
         if svd_c + cont_c < 0.2:
@@ -169,7 +224,7 @@ class HybridRecommender:
         if ratio > 3:
             return "Viewers with similar taste loved this"
         elif ratio < 0.5:
-            return "Closely matches your watching history"
+            return f"Because you liked {source_title}" if source_title else "Closely matches your watching history"
         return "Matches your history and loved by similar viewers"
 
     def recommend_hybrid(self, user_id, n=10, candidate_ids=None):
@@ -177,7 +232,7 @@ class HybridRecommender:
         if profile is None:
             return self.recommend_svd(user_id, n, candidate_ids=candidate_ids)
         scores = cosine_similarity(profile, self.tfidf_matrix).flatten()
-        watched = set(self.train_df[self.train_df['userId'] == user_id]['movieId'])
+        watched = set(user_data['movieId'])
         for m in watched:
             if m in self.movie_id_to_index:
                 scores[self.movie_id_to_index[m]] = -1
@@ -199,9 +254,11 @@ class HybridRecommender:
         for m_id, _, svd_norm, content_norm in scored[:n]:
             row = self.movie_df[self.movie_df['movieId'] == m_id]
             if not row.empty:
+                m_idx = self.movie_id_to_index.get(m_id)
+                source = self._source_title(m_idx, movie_indices, rated_titles) if m_idx is not None else None
                 results.append({
                     'title': row.iloc[0]['title'],
-                    'explanation': self._reason(svd_norm, content_norm),
+                    'explanation': self._reason(svd_norm, content_norm, source),
                 })
         return results
 
@@ -249,8 +306,6 @@ def make_recommender():
         data_bundle['tfidf_matrix'],
         data_bundle['movie_df'],
         data_bundle['train_df'],
-        data_bundle['trainset'],
-        data_bundle['raw_data'],
     )
 
 

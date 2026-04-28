@@ -39,8 +39,10 @@ The superior performance of collaborative filtering adds up given the structure 
 ├── data/                   # Raw MovieLens CSVs & Exported Tableau datasets
 ├── movies.ipynb              # Complete CRISP-DM analysis & Modeling
 ├── app.py                  # Streamlit frontend
+├── convert_model.py           # Facilitate cloud deployment
 ├── recommender_model.pkl   # Serialized SVD model & TF-IDF matrix
-├── requirements.txt        # Dependencies
+├── slides.pdf                # Non-technical presentation
+├── requirements.txt
 └── README.md
 ```
 
@@ -49,3 +51,11 @@ The superior performance of collaborative filtering adds up given the structure 
 * cd to the repo folder
 * pip install -r requirements.txt
 * streamlit run app.py
+
+Here is the live [link](https://bxjl9dnv7rze79ax2nmdbr.streamlit.app/)
+```
+
+## Tableau
+https://public.tableau.com/app/profile/yvonnie.wanyoike/viz/InteractiveDashboardforMovieRecommendationSystem/BusinessProblem_Page_1
+
+
