@@ -46,7 +46,6 @@ The superior performance of collaborative filtering adds up given the structure 
 ├── recommender_model.pkl   # Serialized SVD model & TF-IDF matrix
 ├── slides/                # Non-technical presentation
 ├── requirements.txt
-├── runtime.txt               # Pins python version to facilitate cloud deployment
 └── README.md
 ```
 
