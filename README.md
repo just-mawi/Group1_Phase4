@@ -34,6 +34,9 @@ According to our evaluation, **Collaborative Filtering (SVD)** emerged as the su
 
 The superior performance of collaborative filtering adds up given the structure of the dataset. With over 100,000 ratings across hundreds of users, the interaction matrix is sufficiently dense for matrix factorization methods to learn stable latent factors. In contrast, content-based filtering is constrained by limited content richness in movie metadata (genres and sparse tags)
 
+## Tableau
+[Interactive Movie Recommendation Dashboard](https://public.tableau.com/app/profile/yvonnie.wanyoike/viz/InteractiveDashboardforMovieRecommendationSystem/BusinessProblem_Page_1)
+
 ## Project Structure
 ```text
 ├── data/                   # Raw MovieLens CSVs & Exported Tableau datasets
@@ -54,8 +57,3 @@ The superior performance of collaborative filtering adds up given the structure 
 
 Here is the live [link](https://bxjl9dnv7rze79ax2nmdbr.streamlit.app/)
 ```
-
-## Tableau
-https://public.tableau.com/app/profile/yvonnie.wanyoike/viz/InteractiveDashboardforMovieRecommendationSystem/BusinessProblem_Page_1
-
-
