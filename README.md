@@ -53,3 +53,9 @@ According to our evaluation, **Collaborative Filtering (SVD)** emerged as the su
 * streamlit run app.py
 
 Here is the live [link](https://bxjl9dnv7rze79ax2nmdbr.streamlit.app/)
+```
+
+## Tableau
+https://public.tableau.com/app/profile/yvonnie.wanyoike/viz/InteractiveDashboardforMovieRecommendationSystem/BusinessProblem_Page_1
+
+
