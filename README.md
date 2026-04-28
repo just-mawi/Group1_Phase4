@@ -8,6 +8,13 @@ This project was developed for a burgeoning video streaming platform aiming to c
 
 Using the **MovieLens** dataset (100k+ ratings), we built a multi-stage recommendation engine capable of handling users at every stage of their lifecycle—from brand-new signups to long-term "resident" viewers.
 
+## Deliverables
+- Notebook
+- [Tableau](https://public.tableau.com/app/profile/yvonnie.wanyoike/viz/InteractiveDashboardforMovieRecommendationSystem/BusinessProblem_Page_1)
+- GitHub repo
+- Non-technical presentation
+- [Streamlit deployment](https://bxjl9dnv7rze79ax2nmdbr.streamlit.app/)
+
 ## The Router Logic
 To maximize retention, the system doesn't just use one model. It uses a **Router** to select the best algorithm based on user history:
 
@@ -22,10 +29,7 @@ To maximize retention, the system doesn't just use one model. It uses a **Router
 * **Cold-Start Mitigation:** Uses popularity and content-based filtering to ensure new users see relevant content immediately.
 * **Advanced Evaluation:** Models are evaluated using **RMSE** (rating accuracy) and **NDCG@10** (ranking quality).
 * **Interactive Deployment:** A Streamlit dashboard allowing users to input their preferences and receive real-time recommendations.
-
-## Tableau
-[Interactive Movie Recommendation Dashboard](https://public.tableau.com/app/profile/yvonnie.wanyoike/viz/InteractiveDashboardforMovieRecommendationSystem/BusinessProblem_Page_1)
-
+  
 ## Evaluation Results
 According to our evaluation, **Collaborative Filtering (SVD)** emerged as the superior engine for this dataset.
 
@@ -55,7 +59,7 @@ The superior performance of collaborative filtering adds up given the structure 
 * pip install -r requirements.txt
 * streamlit run app.py
 
-Here is the live [link](https://bxjl9dnv7rze79ax2nmdbr.streamlit.app/)
+Here is the live 
 ```
 
 ## Tableau
