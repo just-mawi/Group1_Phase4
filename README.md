@@ -10,7 +10,7 @@ Using the **MovieLens** dataset (100k+ ratings), we built a multi-stage recommen
 
 ## Deliverables
 - Notebook
-- [Tableau](https://public.tableau.com/app/profile/yvonnie.wanyoike/viz/InteractiveDashboardforMovieRecommendationSystem/BusinessProblem_Page_1)
+- [Tableau](https://public.tableau.com/app/profile/yvonnie.wanyoike/viz/BuildingaMovieRecommendationSystem/RecommendationSystem)
 - GitHub repo
 - Non-technical presentation
 - [Streamlit deployment](https://bxjl9dnv7rze79ax2nmdbr.streamlit.app/)
