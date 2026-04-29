@@ -102,21 +102,23 @@ class HybridRecommender:
         ).flatten()
         return rated_titles[int(np.argmax(sims))]
 
-    # popular
+    # trending
 
-    def recommend_popular(self, n=5, candidate_ids=None):
-        popular = (
-            self.train_df.groupby('movieId')
+    def recommend_trending(self, n=5, candidate_ids=None, days=365):
+        cutoff = self.train_df['datetime'].max() - pd.Timedelta(days=days)
+        trending = (
+            self.train_df[self.train_df['datetime'] >= cutoff]
+            .groupby('movieId')
             .agg(avg_rating=('rating', 'mean'), n_ratings=('rating', 'count'))
-            .query('n_ratings >= 20')
-            .sort_values(['avg_rating', 'n_ratings'], ascending=False)
+            .query('n_ratings >= 10')
+            .sort_values(['n_ratings', 'avg_rating'], ascending=False)
         )
         if candidate_ids is not None:
-            popular = popular[popular.index.isin(candidate_ids)]
-        popular = popular.head(n)
-        rows = self.movie_df[self.movie_df['movieId'].isin(popular.index)]
+            trending = trending[trending.index.isin(candidate_ids)]
+        trending = trending.head(n)
+        rows = self.movie_df[self.movie_df['movieId'].isin(trending.index)]
         return [
-            {'title': r['title'], 'explanation': 'Highly rated overall'}
+            {'title': r['title'], 'explanation': 'Trending right now'}
             for _, r in rows.iterrows()
         ]
 
@@ -286,7 +288,7 @@ def router(user_id, n, recommender, candidate_ids=None):
 
     if stage in ("new", "near-cold"):
         return stage, {
-            "popular": recommender.recommend_popular(n=n, candidate_ids=candidate_ids),
+            "popular": recommender.recommend_trending(n=n, candidate_ids=candidate_ids),
             "content": recommender.recommend_content(user_id, n=n, candidate_ids=candidate_ids),
         }
     elif stage == "early":
@@ -413,7 +415,7 @@ elif st.session_state.stage == 'onboarding':
             with st.spinner("Building your profile..."):
                 content = rec.recommend_content_from_ratings(
                     ratings, n=st.session_state.n_recs, candidate_ids=candidate_ids)
-                popular_recs = rec.recommend_popular(
+                popular_recs = rec.recommend_trending(
                     n=st.session_state.n_recs, candidate_ids=candidate_ids)
             st.session_state.results = {"popular": popular_recs, "content": content}
             st.session_state.feedback = {}
@@ -422,7 +424,7 @@ elif st.session_state.stage == 'onboarding':
     with col_skip:
         if st.button("Skip — show popular picks"):
             with st.spinner("Loading..."):
-                popular_recs = rec.recommend_popular(
+                popular_recs = rec.recommend_trending(
                     n=st.session_state.n_recs, candidate_ids=candidate_ids)
             st.session_state.results = {"popular": popular_recs, "content": None}
             st.session_state.feedback = {}
