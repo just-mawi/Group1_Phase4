@@ -422,7 +422,7 @@ elif st.session_state.stage == 'onboarding':
             st.session_state.stage = 'results'
             st.rerun()
     with col_skip:
-        if st.button("Skip — show popular picks"):
+        if st.button("Skip — show trending picks"):
             with st.spinner("Loading..."):
                 popular_recs = rec.recommend_trending(
                     n=st.session_state.n_recs, candidate_ids=candidate_ids)
@@ -452,7 +452,7 @@ elif st.session_state.stage == 'results':
     if stage in ("new", "near-cold"):
         col_pop, col_content = st.columns(2)
         with col_pop:
-            st.subheader("Popular Picks")
+            st.subheader("Trending Picks")
             render_rec_list(results["popular"], key_prefix="pop")
         with col_content:
             st.subheader("Based on Your History")
